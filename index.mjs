@@ -20,11 +20,11 @@ var fs = import("fs");
 import { readdir } from "fs/promises";
 import { readdirSync } from "fs";
 import { channel } from "diagnostics_channel";
+import { debug } from "console";
 
 //Allows for accesses to whats stored in the dotenv file
 dotenv.config();
 
-const player = createAudioPlayer();
 //Create a new instance of a discord client
 const client = new DiscordJS.Client({
     //In discordjs 13 you must state the bots intentions
@@ -36,8 +36,11 @@ const client = new DiscordJS.Client({
     ],
 });
 
+const Discord = import("@discordjs/voice");
+
 //When the bot is ready it will console log it
 client.on("ready", () => {
+    client.user.setActivity("ur mom");
     console.log("The bot is ready");
     const attachment = new MessageAttachment("https://i.imgur.com/XxxXxXX.jpg");
 });
@@ -52,13 +55,13 @@ client.on("messageCreate", (message) => {
     }
     if (message.content.toLowerCase().includes("don")) {
         const dondir = "./content/images/dons";
-        const length = readdirSync(dondir).length;
+        const length = readdirSync(dondir).length - 1;
 
         const num = Math.floor(Math.random() * length);
         message.channel.send({ files: [`./content/images/dons/${num}.jpg`] });
     }
     if (message.content.toLowerCase().includes("8ball")) {
-        const balldir = "./images/8ball";
+        const balldir = "./content/images/8ball";
         const length = readdirSync(balldir).length;
 
         const num = Math.floor(Math.random() * length);
@@ -78,12 +81,21 @@ client.on("messageCreate", (message) => {
         });
     }
     if (message.content.toLowerCase() == "playvc") {
-        const resource = createAudioResource(`./content/audio/urmom.mp3`);
-        player.play(resource);
-
-        player.on("error", (error) => {
-            console.error(error);
+        const player = createAudioPlayer();
+        const resource = createAudioResource(
+            `https://www.youtube.com/watch?v=5t53TcKIlMc`
+        );
+        const connection = Discord.joinVoiceChannel({
+            channelId: message.channel.id,
+            guildId: message.guild.id,
+            adapterCreator: message.guild.voiceAdapterCreator,
         });
+        player.play(resource);
+        connection.subscribe(player);
+        player.on(client.AudioPlayerStatus.Idle, () => {
+            connection.destory();
+        });
+        console.log(player.checkPlayable());
     }
 });
 
