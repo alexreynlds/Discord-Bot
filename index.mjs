@@ -96,6 +96,7 @@ client.on("messageCreate", (message) => {
             connection.destory();
         });
         console.log(player.checkPlayable());
+        //ep
     }
 });
 
